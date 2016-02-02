@@ -1,11 +1,13 @@
 var request = require('request');
 var _ = require('underscore');
 var moment = require('moment');
-var config = require('./lib/config.js');
+var config = require('../lib/config.js');
+var mu = require('mu2');
 
+mu.root = __dirname;
 
 request('https://api.instagram.com/v1/tags/goodeggseats/media/recent?access_token=' + config.instagram.token, function (error, response, body) {
-  var newBody = JSON.parse(body)
+  var newBody = JSON.parse(body);
 
   if (error) {
     console.error("Error: " + error);
@@ -20,8 +22,13 @@ request('https://api.instagram.com/v1/tags/goodeggseats/media/recent?access_toke
           if (obj.caption === undefined) {
             return null;
           } else {
-            var time = moment.unix(obj.caption['created_time']).format("YYYY-MM-DD hh:mm a")
-            return console.log("Date: " + time + "\nUser: " + obj.caption['from']['username'] + "\nText: " + obj.caption['text'] + "\n" );
+            var time = moment.unix(obj.caption['created_time']).format("YYYY-MM-DD hh:mm a");
+            
+            mu.compileAndRender('template.mustache', {img: obj['images']['thumbnail']['url']})
+              .on('data', function (data) {
+                console.log(data.toString());
+              });
+            // return console.log("Date: " + time + "\nUser: " + obj.caption['from']['username'] + "\nText: " + obj.caption['text'] + "\n" );
           }
         });
       });
